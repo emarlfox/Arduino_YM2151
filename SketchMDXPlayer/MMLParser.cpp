@@ -200,7 +200,7 @@ void	MMLParser::KeyOff(){
 
 void	MMLParser::SetTone(){
 	int16_t	offset;
-	offset = Detune;
+	offset = Detune + 128;
 	if(FunctionF & FLG_MPT){
 		offset += Portamento>>16;	// 右シフトは問題なし
 	}
