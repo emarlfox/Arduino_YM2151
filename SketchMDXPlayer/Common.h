@@ -1,6 +1,7 @@
 #if !defined( YM_COMMON_H_INCLUDED )
 #define YM_COMMON_H_INCLUDED
-#include	"YM2151.h"
+// #include	"YM2151.h"
+#include	"YM2414.h"
 #include	"io.h"
 
 #define		_DEBUG

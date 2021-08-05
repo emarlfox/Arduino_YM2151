@@ -60,7 +60,7 @@ void	MMLParser::Elapse(){
 		// [$00 ～ $7F] 長さはデータ値+1クロック
 		Clock = command+1;
 		KeyOffClock = 0;
-		YM2151.write(0x08,0x00 + Channel);
+		YM2414.write(0x08,0x00 + Channel);
 		return;
 	}
 	if(command < 0xe0){ // 音符
@@ -177,8 +177,8 @@ void	MMLParser::Calc(){
 void	MMLParser::KeyOn(){
 	Portamento = 0;
 	SetTone();
-	YM2151.noteOn(Channel);
-	//YM2151.write(0x08,(RegSLOTMASK << 3)  + Channel);
+	YM2414.noteOn(Channel);
+	//YM2414.write(0x08,(RegSLOTMASK << 3)  + Channel);
 	FunctionF &= ~(FLG_MPT | FLG_FOUT);
 	if(FunctionF & FLG_NEXTMPT){
 		FunctionF |= FLG_MPT;
@@ -191,7 +191,7 @@ void	MMLParser::KeyOn(){
 
 void	MMLParser::KeyOff(){
 	if((StatusF & FLG_NKEYOFF) == 0){
-		YM2151.write(0x08,0x00 + Channel);
+		YM2414.write(0x08,0x00 + Channel);
 	} else {
 		StatusF &= ~FLG_NKEYOFF;
 	}
@@ -200,19 +200,19 @@ void	MMLParser::KeyOff(){
 
 void	MMLParser::SetTone(){
 	int16_t	offset;
-	offset = Detune;
+	offset = Detune + 128; // Detuning from 4 -> 3.579545 MHz
 	if(FunctionF & FLG_MPT){
 		offset += Portamento>>16;	// 右シフトは問題なし
 	}
 	if(FunctionF & FLG_PLFO){
 		offset += PLFO.Offset>>16;
 	}
-	YM2151.setTone(Channel,Note,offset);
+	YM2414.setTone(Channel,Note,offset);
 	return;
 }
 
 void	MMLParser::UpdateVolume(){
-	YM2151.setVolume(Channel,Volume,VLFO.Offset);
+	YM2414.setVolume(Channel,Volume,VLFO.Offset);
 }
 
 //・未定義コマンド
@@ -243,22 +243,22 @@ void	MMLParser::C_ea_LFOCtrl(){
 	uint8_t		lfocom = mdx.ReadData8(CurrentAddr++);
 	if(lfocom & 0x80){
 		if(lfocom & 0x01){		// ??
-			YM2151.write(0x38+Channel,RegPMSAMS);
+			YM2414.write(0x38+Channel,RegPMSAMS);
 		} else {
-			YM2151.write(0x38+Channel,0);
+			YM2414.write(0x38+Channel,0);
 		}
 		return;
 	}
-	YM2151.write(0x1b,lfocom);
+	YM2414.write(0x1b,lfocom);
 
 	uint8_t		lfrq = mdx.ReadData8(CurrentAddr++);
-	YM2151.write(0x18,lfrq);
+	YM2414.write(0x18,lfrq);
 	uint8_t		pmd = mdx.ReadData8(CurrentAddr++);
-	YM2151.write(0x19,pmd);
+	YM2414.write(0x19,pmd);
 	uint8_t		amd = mdx.ReadData8(CurrentAddr++);
-	YM2151.write(0x19,amd);
+	YM2414.write(0x19,amd);
 	uint8_t		RegPMSAMS = mdx.ReadData8(CurrentAddr++);
-	YM2151.write(0x38+Channel,RegPMSAMS);
+	YM2414.write(0x38+Channel,RegPMSAMS);
 }
 //・音量LFO制御
 //    [$EB] + [$80]                 MAOF
@@ -347,7 +347,7 @@ void	MMLParser::C_ec_LFOPitchCtrl(){
 //    [$ED] + [???]                 Fコマンド対応
 void	MMLParser::C_ed_NoisePitch(){
 	uint8_t		noise = mdx.ReadData8(CurrentAddr++);
-	YM2151.write(0x0f,noise);
+	YM2414.write(0x0f,noise);
 }
 //・同期信号待機
 //    [$EE]
@@ -509,7 +509,7 @@ void	MMLParser::C_fb_Volume(){
 void	MMLParser::C_fc_Panpot(){
 	uint8_t		pan = mdx.ReadData8(CurrentAddr++);
 	RegPAN = pan;
-	YM2151.setPanpot(Channel,RegPAN);
+	YM2414.setPanpot(Channel,RegPAN);
 }
 //・音色設定
 //    [$FD] + [???]                 @コマンド対応
@@ -519,8 +519,8 @@ void	MMLParser::C_fd_Timbre(){
 	uint16_t	taddr = mdx.GetTimbreAddr(tno);
 	uint8_t	no = mdx.ReadData8(taddr++);
 	if(no!=tno)ASSERT("TimbreNo Unmuch");
-	YM2151.loadTimbre(Channel,mdx.GetTimbreAddr(tno) + mdx.DataBP);
-	YM2151.setPanpot(Channel,RegPAN);
+	YM2414.loadTimbre(Channel,mdx.GetTimbreAddr(tno) + mdx.DataBP);
+	YM2414.setPanpot(Channel,RegPAN);
 	UpdateVolume();
 }
 
@@ -529,7 +529,7 @@ void	MMLParser::C_fd_Timbre(){
 void	MMLParser::C_fe_Registar(){
 	uint8_t		reg = mdx.ReadData8(CurrentAddr++);
 	uint8_t		data = mdx.ReadData8(CurrentAddr++);
-	YM2151.write(reg,data);
+	YM2414.write(reg,data);
 }
 //・テンポ設定
 //    [$FF] + [???]                 @tコマンド対応

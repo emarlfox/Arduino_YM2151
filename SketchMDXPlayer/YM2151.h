@@ -5,20 +5,20 @@
 class	YM2151_Class{
 	public:
 		YM2151_Class();
-		void	begin();
-		void	initLFO();
+		virtual void	begin();
+		virtual void	initLFO();
 		uint8_t	read();
 		void	write(uint8_t addr,uint8_t data);
 		
-		void	setTone(uint8_t ch,uint8_t keycode,int16_t kf);
+		virtual void	setTone(uint8_t ch,uint8_t keycode,int16_t kf);
 		void	setVolume(uint8_t ch,uint8_t volume,uint16_t offset);
 		void	noteOn(uint8_t ch);
 		void	noteOff(uint8_t ch);
 		void	loadTimbre(uint8_t ch,uint16_t prog_addr);
 		void	loadSeparationTimbre(uint8_t ch,uint16_t prog_addr);
 		void	dumpTimbre(uint16_t prog_addr);
-		void	setPanpot(uint8_t ch,uint8_t pan);
-	private:
+		virtual void	setPanpot(uint8_t ch,uint8_t pan);
+	protected:
 		static	const	uint8_t		PIN_D0=2;
 		static	const	uint8_t		PIN_D1=3;
 		static	const	uint8_t		PIN_D2=4;

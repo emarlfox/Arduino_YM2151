@@ -14,7 +14,7 @@ void		MDXParser::Setup(uint16_t bp)
 		OPMChannel[i].Init(i,BaseOffset,ReadData16(tableaddr));
 		tableaddr+=2;
 	}
-	YM2151.write(0x0f,0);
+	YM2414.write(0x0f,0);
 
 
 }
