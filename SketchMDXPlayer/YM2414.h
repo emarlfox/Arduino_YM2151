@@ -11,6 +11,7 @@ class YM2414_Class: public YM2151_Class {
 
     protected:
 		uint8_t	RegKFMONO[8];
+		uint8_t RegKC[8];
 };
 
 extern YM2414_Class YM2414;

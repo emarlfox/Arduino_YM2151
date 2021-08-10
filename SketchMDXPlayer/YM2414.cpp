@@ -44,10 +44,11 @@ void YM2414_Class::setTone(uint8_t ch,uint8_t keycode,int16_t kf){
 	if(offset_note < 0)offset_note=0;
 	if(offset_note > 0xbf)offset_note=0xbf;
 
-    RegKFMONO[ch] = (offset_kf<<2) | RegKFMONO[ch] & 3;
+	RegKFMONO[ch] = (offset_kf << 2) | RegKFMONO[ch] & 3;
+    RegKC[ch] = pgm_read_byte_near(KeyCodeTable + offset_note) | RegKC[ch] & 0x80;
 	
-	write(0x30 + ch, offset_kf<<2);
-	write(0x28 + ch, pgm_read_byte_near(KeyCodeTable + offset_note));
+	write(0x30 + ch, RegKFMONO[ch]);
+	write(0x28 + ch, RegKC[ch]);
 }
 
 void YM2414_Class::setPanpot(uint8_t ch,uint8_t pan)
@@ -56,12 +57,14 @@ void YM2414_Class::setPanpot(uint8_t ch,uint8_t pan)
     RegFLCON[ch] = ((pan & 0x03) << 6) | (RegFLCON[ch] & 0x3F);
     write(0x20+ch, RegFLCON[ch]);
 
-    RegKFMONO[ch] = (pan & 1) | (RegKFMONO[ch] & 0xFE);
-    write(0x30+ch, RegKFMONO[ch]);
+	RegKFMONO[ch] = (pan & 0x03) | (RegKFMONO[ch] & 0xFE);
+	// RegKFMONO[ch] = (0 & 0x03) | (RegKFMONO[ch] & 0xFE);
+	write(0x30 + ch, RegKFMONO[ch]);
+
+    RegKC[ch] = ((pan & 0x01) << 7) | (RegKC[ch] & 0xFE);
+    write(0x28 + ch, RegKC[ch]);
 
     // if ( pan & )
     // write(0x20+ch,
 	// 	(pan<<6) | (RegFLCON[ch] ));
 }
-// 0x20 R = 0, 0x30 M = 0 : Left channel only
-// 0x20 R = 1, 0x30 M = 1 : Right channel only

@@ -168,7 +168,7 @@ void	YM2151_Class::loadTimbre(uint8_t ch,uint16_t prog_addr)
 	};
 	uint16_t taddr = prog_addr;
 	uint8_t	no = pgm_read_byte_near(taddr++);
-	RegFLCON[ch] = pgm_read_byte_near(taddr++);
+	RegFLCON[ch] = (pgm_read_byte_near(taddr++) & 0x3F) | (RegFLCON[ch] & 0xC0);
 	CarrierSlot[ch] = carrier_slot_tbl[RegFLCON[ch] & 0x7];
 	RegSLOTMASK[ch] = pgm_read_byte_near(taddr++);
 
